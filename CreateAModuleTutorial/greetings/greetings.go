@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-
-	//"golang.org/x/text/message"
 )
 
 //Si el nombre de esta funcion no empezara con una mayuscula, la funcion no fuera visible desde otros modulos.
@@ -13,9 +11,7 @@ func Hello(name string) (string, error) {
 	if len(name) == 0 {
 		return "", errors.New("a name must be given")
 	}
-	
 	message := fmt.Sprintf(randomFormat(), name)
-	//message := fmt.Sprintln("Fafefifofu")
 	return message, nil
 }
 
