@@ -4,6 +4,8 @@ import (
 	"fmt"
     "net/http"
     "github.com/gin-gonic/gin"
+	"os"
+	"github.com/joho/godotenv"//Si este paquete las variables no cargan.
 )
 
 // album represents data about a record album.
@@ -23,11 +25,26 @@ var albums = []album{
 }
 
 func main() {
+
+	err := godotenv.Load(".env")
+	
+	if err != nil {
+		fmt.Println("Envars could not be loeaded")
+		return
+	}
+	
+	port := os.Getenv("PORT")
+	
+	if len(port) == 0 {
+		fmt.Println("PORT not found, setting to 8080")
+		port = "8080"
+	}
+
     router := gin.Default()
     router.GET("/albums", getAlbums)
     router.POST("/albums", postAlbum)
 	router.GET("/albums/:id", getAlbumByID)
-	router.Run("localhost:8080")
+	router.Run(fmt.Sprintf("localhost:%s", port))
 }
 
 func getAlbumByID(c *gin.Context) {
