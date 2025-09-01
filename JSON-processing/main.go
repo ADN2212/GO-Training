@@ -55,11 +55,6 @@ func main() {
 		return
 	}
 
-	// fmt.Println("Lista de provincias:----------------------------------------------------------------------")
-	// for i := range provs {
-	// 	fmt.Println(provs[i].Name)
-	// }
-
 	//TODO: abstraer toda esta logica repetida usando un funcion que retorne un generic type.
 	cityFile, cityErr := os.Open("./data/municipios.json")
 
@@ -89,11 +84,6 @@ func main() {
 		return
 	}
 
-	// fmt.Println("Lista de cuidades: ----------------------------------------------------------------------")
-	// for i := range cities {
-	// 	fmt.Println(cities[i].Name)
-	// }
-
 	sectorFile, sectorErr := os.Open("./data/sectores.json")
 
 	if sectorErr != nil {
@@ -122,56 +112,54 @@ func main() {
 		return
 	}
 
-	// fmt.Println("Lista de sectores: ----------------------------------------------------------------------")
-	// for i := range sectors {
-	// 	fmt.Println(sectors[i])
-	// }
+	provsMap := make(map[uint]Province) //De esta forma se declara e inizializa el map al mismo tiempo.
+	var currentProv Province
 
-	//Este map servira para agrupar los sectores por cuidad
-	sectorsMap := make(map[uint][]Sector) //De esta forma se declara e inizializa el map al mismo tiempo.
-	var currentSector Sector
-
-	for i := range sectors {
-		currentSector = sectors[i]
-		if len(sectorsMap[currentSector.CityId]) == 0 {
-			sectorsMap[currentSector.CityId] = []Sector{currentSector}
-		} else {
-			sectorsMap[currentSector.CityId] = append(sectorsMap[currentSector.CityId], currentSector)
-		}
+	for i := range provs {
+		currentProv = provs[i]
+		provsMap[currentProv.ProvinceId] = currentProv
 	}
 
-	//fmt.Println(sectorsMap)
-	// for cityId, sectorsArray := range sectorsMap {
-	// 	fmt.Println(cityId)
-	// 	for i := range sectorsArray {
-	// 		fmt.Println(sectorsArray[i])
-	// 	}
-	// }
-
-	//El siguiente para aculumar las cuidades por porvincia:
-	citiesMap := make(map[uint][]City)
+	//En este mapa la key es el id de la cuidad y el value es la cuidad, esto es para poder buscar cuidades en O(1) time
+	citiesMap := make(map[uint]City)
 	var currentCity City
 
 	for i := range cities {
-
 		currentCity = cities[i]
+		citiesMap[currentCity.CityId] = currentCity
+	}
 
-		if len(citiesMap[currentCity.ProvinceId]) == 0 {
-			citiesMap[currentCity.ProvinceId] = []City{currentCity}
+	reducedProvs := make(map[string]map[string][]string)
+
+	var currentSector Sector
+
+	for i := range sectors {
+
+		currentSector = sectors[i]
+		currentCity = citiesMap[currentSector.CityId]
+		currentProv = provsMap[currentCity.ProvinceId]
+
+		if len(reducedProvs[currentProv.Name]) == 0 {
+			reducedProvs[currentProv.Name] = map[string][]string{
+				fmt.Sprint(currentCity.Name): {currentSector.Name},
+			}
 		} else {
-			citiesMap[currentCity.ProvinceId] = append(citiesMap[currentCity.ProvinceId], currentCity)
+			if len(reducedProvs[currentProv.Name][currentCity.Name]) == 0 {
+				reducedProvs[currentProv.Name][currentCity.Name] = []string{currentSector.Name}
+			} else {
+				reducedProvs[currentProv.Name][currentCity.Name] = append(reducedProvs[currentProv.Name][currentCity.Name], currentSector.Name)
+			}
 		}
 	}
 
-	// for provId, cityArray := range citiesMap {
-	// 	fmt.Println(provId)
-	// 	for i := range cityArray {
-	// 		fmt.Println(cityArray[i])
-	// 	}
-	// }
-
-	
-
-
+	for provName, cityMap := range reducedProvs {
+		fmt.Println("+", provName, "-----------------------------------------------------")
+		for cityname, sectorsArray := range cityMap {
+			fmt.Println("	-", cityname)
+			for i := range sectorsArray {
+				fmt.Println("		->", sectorsArray[i])
+			}
+		}
+	}
 
 }
