@@ -26,7 +26,7 @@ func main() {
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
-		fmt.Print("Failed to connect DB")
+		fmt.Print(err.Error())
 		//panic(err)
 		return
 	}
@@ -68,7 +68,7 @@ func main() {
 
 	var city City
 
-	cityRow := db.QueryRow(sqlStatemet2, azuaId)
+	cityRow := db.QueryRow(sqlStatemet2, azuaId)//Este se usa cuando se espera un solo registro.
 	queryError2 := cityRow.Scan(&city.ID, &city.Name, &city.Province) //Ha de obedecri el orden de los campos en la query ?? Si y los tipos deben coincidir.
 
 	if queryError2 != nil {
@@ -110,6 +110,7 @@ func main() {
 	//Ejemplo de UPDATE query:
 	updateQuery := `UPDATE cities SET name = $2 WHERE id = $1;`
 
+	//Este metodo se usa cuando no se quiere que se retornen rows.
 	res, updateError := db.Exec(updateQuery, "28feb055-c731-4af8-9a02-fceca44e751a", "Konoha")
 
 	if updateError != nil {
@@ -137,6 +138,7 @@ func main() {
 		return
 	}
 
+	//Se podria retornar not found en caso de que no se afecte (elimine) ninguna row
 	deletedRows, err11 := deleteRes.RowsAffected()
 
 	if err11 != nil {
