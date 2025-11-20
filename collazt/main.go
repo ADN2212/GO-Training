@@ -1,11 +1,9 @@
 package main
 
-
 import (
 	"fmt"
 	"time"
 )
-
 
 var memo = make(map[int]int)
 
@@ -14,7 +12,7 @@ func main() {
 	n := 1
 	nMax := 0
 	max := -100
-	
+
 	inicio := time.Now()
 
 	for n < 1_000_000 {
@@ -27,7 +25,7 @@ func main() {
 	}
 
 	fmt.Printf("The number that put the longest sec is %v \n", nMax)
-	fmt.Printf("Tiempo de ejecución: %v\n", time.Since(inicio).Seconds())
+	fmt.Printf("Tiempo de ejecución: %v\n", time.Since(inicio).Milliseconds())
 }
 
 func memo_collazt(n int) int {
