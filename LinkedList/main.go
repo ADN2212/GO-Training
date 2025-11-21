@@ -4,7 +4,8 @@ import "fmt"
 
 type Node struct {
 	val      int
-	nextNode *Node
+	nextNode *Node//Since we area passing &node when doing *&node = node so we area using a real node value, 
+	// but we are using the value that is in the pointer.
 }
 
 func main() {
@@ -40,6 +41,8 @@ func sumLinkedListElement(head Node) int {
 	return head.val + sumLinkedListElement(*head.nextNode)
 }
 
+//Para poder hacer cambios en la lista es necesario que los argumentos de la funcion sean
+//punteros a los nodos, porque lo contrario se estarian editando copias de los nodos lo caul no generaria cambios en la lista original 
 func eraseNode(toErrase *Node, current *Node) {
 
 	if current.val == toErrase.val {

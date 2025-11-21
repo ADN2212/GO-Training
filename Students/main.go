@@ -48,8 +48,8 @@ func howManyPassed(stu Student) int {
 	if stu.average >= 70 {
 		fmt.Printf("name: %v, mat: %v, average: %v \n", stu.fullName, stu.mat, stu.average)
 		return 1 + howManyPassed(*stu.next)
-	} else {
-		return 0 + howManyPassed(*stu.next)
 	}
+
+	return 0 + howManyPassed(*stu.next)//Is this tail recursive ???
 
 }
