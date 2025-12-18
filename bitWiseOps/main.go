@@ -27,7 +27,7 @@ func main() {
 	// 1101 & 1011 = 1 & 1, 1 & 0, 0 & 1, 1 & 1 = 1001 
 	x = 5
 	y = 6
-	fmt.Printf("%b & %b = %b\n", x, y, x & y )
+	fmt.Printf("%b & %b = %b\n", x, y, x & y  )
 
 	// |
 	//Lo mismo pero con OR
