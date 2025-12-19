@@ -34,7 +34,6 @@ func main() {
 	prevPos := postion{row: 0, col: 2}
 	pos := postion{row: 0, col: 2}
 
-	//fmt.Println(pos)
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -74,7 +73,6 @@ func main() {
 		if maze[pos.row][pos.col] == "#" {
 			maze[prevPos.row][prevPos.col] = " "
 			maze[pos.row][pos.col] = "X"
-			//fmt.Print("\033[H\033[2J")
 			showMaze(&maze)
 			fmt.Println("Usted se la acaba de beber")
 			break
@@ -86,7 +84,6 @@ func main() {
 			prevPos.row = pos.row
 			prevPos.col = pos.col
 			showMaze(&maze)
-			//fmt.Print("\033[H\033[2J")
 		}
 
 		if pos.col == winPos.col && pos.row == winPos.row {
@@ -97,15 +94,6 @@ func main() {
 		}
 	}
 }
-
-// if m[pos.row][pos.col] == "#" {
-// 	m[pos.row][pos.col] = "X"
-// 	return
-// }
-
-// if m[pos.row][pos.col] == " " || m[pos.row][pos.col] == "." {
-// 	m[pos.row][pos.col] = "$"
-// }
 
 func showMaze(m *[10][10]string) {
 	var currRowStr string
