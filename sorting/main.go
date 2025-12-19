@@ -50,7 +50,7 @@ func main() {
 	})
 	fmt.Println(people)
 
-	//Tambien se pueden usar Sorted functions par no mutar el slice originar
+	//Tambien se pueden usar Sorted functions para no mutar el slice originar
 	people2 := []Person{
 		{"Gopher", 13},
 		{"Alice", 20},
