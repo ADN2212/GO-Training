@@ -17,7 +17,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
+
+	defer (func(){
+		fmt.Println("Closing the request body")
+		resp.Body.Close()
+	})() 												
 
 	//This handle can be better 
 	if resp.StatusCode != 200 {
