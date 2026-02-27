@@ -17,25 +17,23 @@ type Node struct {
 	children []*Node
 }
 
-func (node *Node) descendants() []uint {
-	var res = []uint{}
-	//Para poder user una funcion dentro de otra esta debe ser anonima
-	var innerSearch func(*Node)
-	innerSearch = func(node *Node) {
-		if len(node.children) == 0 {
-			return
-		}
-		for _, node := range node.children {
-			if !slices.Contains(res, node.id) {
-			res = append(res, node.id)
-			}
-		}
-		//Para poder hacer llamadas recursivas la funcion anonima debe ser declarada con anterioridad.
-		for _, n := range node.children {
-			innerSearch(n)
+func innerSearch(node *Node, idsArray *[]uint) {
+	if len(node.children) == 0 {
+		return
+	}
+	for _, node := range node.children {
+		if !slices.Contains(*idsArray, node.id) {
+			*idsArray = append(*idsArray, node.id)
 		}
 	}
-	innerSearch(node)
+	for _, n := range node.children {
+		innerSearch(n, idsArray)
+	}
+}
+
+func (node *Node) descendants() []uint {
+	var res = []uint{}
+	innerSearch(node, &res)
 	return res
 }
 
@@ -68,8 +66,8 @@ func main() {
 	fmt.Println(madre)
 
 	//Whole tree:
-	fmt.Println(padre.descendants())  
-	
+	fmt.Println(padre.descendants())
+
 	//Tercer nivel:
 	fmt.Println(nieto1.descendants())
 	fmt.Println(nieto2.descendants())
