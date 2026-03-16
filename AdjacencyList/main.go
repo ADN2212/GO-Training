@@ -20,8 +20,14 @@ type Ave struct {
 	Id int
 	Name string
 	Tipo TipoAve
+}
+
+//Tabla que sirve definir las relaciones entre aves
+type AveConnection struct {
+	Id int
 	PadreId int
 	MadreId int
+	PadroteId int
 }
 
 
@@ -95,7 +101,12 @@ func updateAveParents(db *sql.DB, id, newPadreId, newMadreId int) {
 }
 
 //Deberia ser capaz de mostrar todas las aves en el subtree 
-func ViewDescendants(db *sql.DB, aveId int) {
+func ViewDescendants(db *sql.DB, aveId int, padroteId int) {
+
+	//Buscar el minimo de todos los ids decendientes del ave
+	//fil
+
+
 }
 
 
