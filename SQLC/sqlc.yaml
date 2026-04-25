@@ -1,0 +1,10 @@
+#SQLC usa este yaml para saber a que files ir para generar el modulo
+version: "2"
+sql:
+  - engine: "postgresql" #el motor de base de datos
+    queries: "query.sql" #Las querys en base a las cuales se generaran los metodos 
+    schema: "schema.sql" #Que forma tienen las tablas a las que se estan haciendo las query
+    gen:
+      go:
+        package: "tutorial" 
+        out: "tutorial"
