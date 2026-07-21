@@ -16,7 +16,7 @@ type Node struct {
 	color    Color
 	children []*Node
 }
-
+//This is a DFS like algorithm
 func innerSearch(node *Node, idsArray *[]uint) {
 	if len(node.children) == 0 {
 		return
@@ -26,6 +26,7 @@ func innerSearch(node *Node, idsArray *[]uint) {
 			*idsArray = append(*idsArray, node.id)
 		}
 	}
+	//Here is the DFS movement, going deeper instead of going **wider**.
 	for _, n := range node.children {
 		innerSearch(n, idsArray)
 	}
@@ -56,8 +57,6 @@ func main() {
 	hijo1 := Node{id: 4, name: "Pedro", color: red, children: []*Node{&nieto1, &nieto2, &nieto3}}
 	hija2 := Node{id: 5, name: "Juana", color: blue, children: []*Node{&nieto3, &nieto4, &nieto5}}
 	hijo2 := Node{id: 6, name: "Paco", color: red, children: []*Node{&nieto4, &nieto5}}
-
-	//append(padre.children, &hija1)
 
 	padre := Node{id: 1, name: "Padrote", color: red, children: []*Node{&hija1, &hija2, &hijo1, &hijo2}}
 	madre := Node{id: 2, name: "Madrota", color: blue, children: []*Node{&hija1, &hija2, &hijo1, &hijo2}}
