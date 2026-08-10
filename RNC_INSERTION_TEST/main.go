@@ -23,7 +23,7 @@ import (
 //     payment_regime        TEXT
 // );
 
-//Este tipo debe implementar los metodos, Next, Values, y Err para que la 
+// Este tipo debe implementar los metodos, Next, Values, y Err para que la
 type RowSrc struct {
 	cr     *csv.Reader
 	values []any
@@ -66,8 +66,16 @@ const dns = "host=localhost port=5432 user=juanadonisnunezcollado password=12345
 var colunmNames = []string{"rnc", "business_name", "economic_activity", "date_operations_began", "status", "payment_regime"}
 
 func main() {
+	start := time.Now()
 	fmt.Println("Abriendo al chivo")
 	r, err := openCSV("RNC_Contribuyentes_Actualizado_01_Ago_2026.csv")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	dbCtx := context.Background()
+
+	conn, err := pgx.Connect(dbCtx, dns)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -75,19 +83,13 @@ func main() {
 	defer func() {
 		fmt.Println("Cerrando al chivo : /")
 		r.Close()
+		conn.Close(dbCtx)
 	}()
 
-	conn, err := pgx.Connect(context.Background(), dns)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	start := time.Now()
 	count, err := insert(conn, r)
 	if err != nil {
 		panic(err.Error())
 	}
-
 	fmt.Printf("%v filas insertadas en %v segundos \n", count, time.Since(start))
 
 }
@@ -96,7 +98,6 @@ func insert(conn *pgx.Conn, f io.ReadCloser) (int64, error) {
 	rowSrc := RowSrc{
 		cr: csv.NewReader(f),
 	}
-
 
 	count, err := conn.CopyFrom(context.Background(), pgx.Identifier{"taxpayers"}, colunmNames, &rowSrc)
 	if err != nil {
