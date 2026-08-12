@@ -40,22 +40,26 @@ func main() {
 		},
 	}
 
-	rads := []pair{}
-
+	//rads := []pair{}
+	rads := make([]pair, 100_001)//Declarar el slice de esta manera permite quitar el mutex
 	var wg sync.WaitGroup
-	var mu sync.Mutex
+	//var mu sync.Mutex
 
+	//Ojo: al parecer esta version es mas lenta que la de las go routines separadas
 	for i, inter := range intervals {
 		wg.Add(1)
 		go func() {
 			n := uint64(inter.start)
 			for n <= inter.end {
-				mu.Lock()
-				rads = append(rads, pair{
-					n:      n,
-					radVal: rad(n),
-				})
-				mu.Unlock()
+				// mu.Lock() //Todo bloque de codigo entre esta linea y UnLock esta protegida againt race conditios
+				// rads = append(rads, pair{
+				// 	n:      n,
+				// 	radVal: rad(n),
+				// })
+				// mu.Unlock()
+				//Usar estas lineas cuando se declare el slice de ante mano.
+				rads[n].n = n
+				rads[n].radVal = rad(n)
 				n += 1
 			}
 			wg.Done()
@@ -63,7 +67,7 @@ func main() {
 		}()
 	}
 	wg.Wait()
-	
+
 	slices.SortFunc(rads, func(p1, p2 pair) int {
 		if p1.radVal == p2.radVal {
 			return cmp.Compare(p1.n, p2.n)
@@ -72,7 +76,9 @@ func main() {
 	})
 
 	k := 10_000
-	fmt.Println(rads[k-1].n) //21417
+
+	fmt.Println(rads[k].n) //21417
+	//fmt.Println(rads[k-1].n) //21417
 	fmt.Printf("Completado en %v segundos\n", time.Since(start).Seconds())
 }
 
