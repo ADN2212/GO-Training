@@ -13,84 +13,57 @@ type pair struct {
 	radVal uint64
 }
 
+type interval struct {
+	start uint64
+	end   uint64
+}
+
 func main() {
 	start := time.Now()
 
-	// rads := []pair{}
-	// limit := uint64(100_000)
+	intervals := []interval{
+		{
+			start: 1,
+			end:   25_000,
+		},
+		{
+			start: 25_001,
+			end:   50_000,
+		},
+		{
+			start: 50_001,
+			end:   75_000,
+		},
+		{
+			start: 75_001,
+			end:   100_000,
+		},
+	}
 
-	// n := uint64(1)
-	// for n <= limit {
-	// 	rads = append(rads, pair{
-	// 		n:      n,
-	// 		radVal: rad(n),
-	// 	})
-	// 	n += 1
-	// }
-
-	rads1 := []pair{}
-	rads2 := []pair{}
-	rads3 := []pair{}
-	rads4 := []pair{}
+	rads := []pair{}
 
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 
-	wg.Add(4)
-	go func() {
-		n := uint64(1)
-		for n <= 25_000 {
-			rads1 = append(rads1, pair{
-				n:      n,
-				radVal: rad(n),
-			})
-			n += 1
-		}
-		wg.Done()
-		fmt.Println("Firts go rutine completed")
-	}()
-	go func() {
-		n := uint64(25_001)
-		for n <= 50_000 {
-			rads2 = append(rads2, pair{
-				n:      n,
-				radVal: rad(n),
-			})
-			n += 1
-		}
-		wg.Done()
-		fmt.Println("Second go rutine completed")
-	}()
-	go func() {
-		n := uint64(50_001)
-		for n <= 75_000 {
-			rads3 = append(rads3, pair{
-				n:      n,
-				radVal: rad(n),
-			})
-			n += 1
-		}
-		wg.Done()
-		fmt.Println("Tercera go rutine completed")
-	}()
-	go func() {
-		n := uint64(75_001)
-		for n <= 100_000 {
-			rads4 = append(rads4, pair{
-				n:      n,
-				radVal: rad(n),
-			})
-			n += 1
-		}
-		wg.Done()
-		fmt.Println("Cuarta go rutine completed")
-	}()
-
+	for i, inter := range intervals {
+		wg.Add(1)
+		go func() {
+			n := uint64(inter.start)
+			for n <= inter.end {
+				mu.Lock()
+				rads = append(rads, pair{
+					n:      n,
+					radVal: rad(n),
+				})
+				mu.Unlock()
+				n += 1
+			}
+			wg.Done()
+			fmt.Printf("Go routine no %v completed \n", i+1)
+		}()
+	}
 	wg.Wait()
-	rads := append(rads1, rads2...)
-	rads = append(rads, rads3...)
-	rads = append(rads, rads4...)
-	//fmt.Printf("len = %v \n", len(rads)) //100_000
-	//fmt.Println("Despues de que terminaron las go rutines")
+	
 	slices.SortFunc(rads, func(p1, p2 pair) int {
 		if p1.radVal == p2.radVal {
 			return cmp.Compare(p1.n, p2.n)
