@@ -35,7 +35,7 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	wg.Add(1)
+	wg.Add(4)
 	go func() {
 		n := uint64(1)
 		for n <= 25_000 {
@@ -46,11 +46,8 @@ func main() {
 			n += 1
 		}
 		wg.Done()
-		//fmt.Println(n)
 		fmt.Println("Firts go rutine completed")
 	}()
-
-	wg.Add(1)
 	go func() {
 		n := uint64(25_001)
 		for n <= 50_000 {
@@ -61,11 +58,8 @@ func main() {
 			n += 1
 		}
 		wg.Done()
-		//fmt.Println(n)
 		fmt.Println("Second go rutine completed")
 	}()
-
-	wg.Add(1)
 	go func() {
 		n := uint64(50_001)
 		for n <= 75_000 {
@@ -76,11 +70,8 @@ func main() {
 			n += 1
 		}
 		wg.Done()
-		//fmt.Println(n)
 		fmt.Println("Tercera go rutine completed")
 	}()
-
-	wg.Add(1)
 	go func() {
 		n := uint64(75_001)
 		for n <= 100_000 {
@@ -91,7 +82,6 @@ func main() {
 			n += 1
 		}
 		wg.Done()
-		//fmt.Println(n)
 		fmt.Println("Cuarta go rutine completed")
 	}()
 
