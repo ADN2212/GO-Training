@@ -21,27 +21,29 @@ type interval struct {
 func main() {
 	start := time.Now()
 
+	//Dependiendo del tamanio de estos intervalos las go routines que los ejecuten terminaran antes o despues
+	//vease como en este caso el primer intervalo es el mas largo y por tanto su gr el la ultima en terminar.
 	intervals := []interval{
 		{
 			start: 1,
-			end:   25_000,
-		},
-		{
-			start: 25_001,
 			end:   50_000,
 		},
 		{
 			start: 50_001,
-			end:   75_000,
+			end:   60_000,
 		},
 		{
-			start: 75_001,
+			start: 60_001,
+			end:   70_000,
+		},
+		{
+			start: 70_001,
 			end:   100_000,
 		},
 	}
 
 	//rads := []pair{}
-	rads := make([]pair, 100_001)//Declarar el slice de esta manera permite quitar el mutex
+	rads := make([]pair, 100_000)//Declarar el slice de esta manera permite quitar el mutex
 	var wg sync.WaitGroup
 	//var mu sync.Mutex
 
@@ -51,15 +53,20 @@ func main() {
 		go func() {
 			n := uint64(inter.start)
 			for n <= inter.end {
+
 				// mu.Lock() //Todo bloque de codigo entre esta linea y UnLock esta protegida againt race conditios
 				// rads = append(rads, pair{
 				// 	n:      n,
 				// 	radVal: rad(n),
 				// })
 				// mu.Unlock()
+
 				//Usar estas lineas cuando se declare el slice de ante mano.
-				rads[n].n = n
-				rads[n].radVal = rad(n)
+				//como el slice tiene un tamanio fijo de ante mano no hay que usar append
+				//lo cual elimina la posibilidad de que hayan rece conditions
+				//por por tanto no se hace necesario el uso de mutex 
+				rads[n-1].n = n
+				rads[n-1].radVal = rad(n)
 				n += 1
 			}
 			wg.Done()
@@ -76,9 +83,7 @@ func main() {
 	})
 
 	k := 10_000
-
-	fmt.Println(rads[k].n) //21417
-	//fmt.Println(rads[k-1].n) //21417
+	fmt.Println(rads[k-1].n) //21417
 	fmt.Printf("Completado en %v segundos\n", time.Since(start).Seconds())
 }
 
