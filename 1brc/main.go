@@ -8,6 +8,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -18,72 +19,104 @@ type stast struct {
 	count int
 }
 
+type cityRow struct {
+	name string
+	temp float64
+}
+
+type interval struct {
+	start int64
+	end   int64
+}
+
 func main() {
 	start := time.Now()
 
+	fmt.Println("Abriendo al chivo ..")
 	f, err := os.Open("measurements.txt")
 	if err != nil {
 		panic(err.Error())
 	}
-
-	fmt.Println("Abriendo al chivo ..")
 	defer func() {
 		fmt.Println("Cerrando al chivo")
 		f.Close()
 	}()
 
+	var wg sync.WaitGroup
+	var mu sync.Mutex
 
-	csvReader := csv.NewReader(f)
-	csvReader.Comma = ';'
+	intervals := []interval{
+		{
+			start: 0,
+			end:   5_000_000_007,
+		},
+		{
+			start: 5_000_000_008,
+			end:   10_000_000_000,
+		},
+		{
+			start: 10_000_000_001,
+			end:   12_850_000_000,
+		},
+	}
 
-
-	csvReader.InputOffset()
+	i := 1
 
 	statsMap := map[string]stast{}
-	//i := 1
-	fmt.Println("Starting loop ...")
-	for {
 
-		row, err := csvReader.Read()
-		if errors.Is(err, io.EOF) {
-			break
-		}
+	for _, interval := range intervals {
+		wg.Add(1)
+		go func() {
+			section := csv.NewReader(io.NewSectionReader(f, interval.start, interval.end))
+			section.Comma = ';'
 
-		name := row[0]
-		tempStr := row[1]
+			for {
+				row, err := section.Read()
+				if errors.Is(err, io.EOF) {
+					break
+				}
 
-		cityStats, ok := statsMap[name]
-		val, err := strconv.ParseFloat(tempStr, 64)
-		if err != nil {
-			panic(err.Error())
-		}
+				name := row[0]
+				tempStr := row[1]
 
-		if !ok {
-			//fmt.Printf("Adding %v to stats map \n", name)
-			statsMap[name] = stast{
-				min:   val,
-				sum:   val,
-				max:   val,
-				count: 1,
+				mu.Lock()
+				cityStats, ok := statsMap[name]
+				val, err := strconv.ParseFloat(tempStr, 64)
+				if err != nil {
+					panic(err.Error())
+				}
+
+				if !ok {
+					statsMap[name] = stast{
+						min:   val,
+						sum:   val,
+						max:   val,
+						count: 1,
+					}
+				} else {
+					cityStats.count += 1
+					cityStats.sum += val
+					if val > cityStats.max {
+						cityStats.max = val
+					}
+					if val < cityStats.min {
+						cityStats.min = val
+					}
+					statsMap[name] = cityStats
+				}
+				mu.Unlock()
 			}
-		} else {
-			//fmt.Printf("Updating %v value \n", name)
-			cityStats.count += 1
-			cityStats.sum += val
-			if val > cityStats.max {
-				cityStats.max = val
-			}
-			if val < cityStats.min {
-				cityStats.min = val
-			}
-			statsMap[name] = cityStats
-		}
-		//i += 1
+
+			wg.Done()
+			fmt.Printf("Go routine No. %d completada. \n", i)
+			mu.Lock()
+			i = i + 1
+			mu.Unlock()
+		}()
 	}
-	fmt.Println("Loop ended ...")
+	wg.Wait()
 
 	names := []string{}
-
 	for name := range statsMap {
 		names = append(names, name)
 	}
