@@ -60,15 +60,13 @@ func main() {
 		},
 	}
 
-	i := 1
-
-	statsMap := map[string]stast{}
-
+	statsMaps := []map[string]stast{}
 	for _, interval := range intervals {
 		wg.Add(1)
 		go func() {
 			section := csv.NewReader(io.NewSectionReader(f, interval.start, interval.end))
 			section.Comma = ';'
+			statsMap := map[string]stast{}
 
 			for {
 				row, err := section.Read()
@@ -79,7 +77,6 @@ func main() {
 				name := row[0]
 				tempStr := row[1]
 
-				mu.Lock()
 				cityStats, ok := statsMap[name]
 				val, err := strconv.ParseFloat(tempStr, 64)
 				if err != nil {
@@ -104,20 +101,43 @@ func main() {
 					}
 					statsMap[name] = cityStats
 				}
-				mu.Unlock()
-			}
 
-			wg.Done()
-			fmt.Printf("Go routine No. %d completada. \n", i)
+			}
 			mu.Lock()
-			i = i + 1
+			statsMaps = append(statsMaps, statsMap)
 			mu.Unlock()
+			wg.Done()
 		}()
 	}
 	wg.Wait()
 
+	result := map[string]stast{}
+	for _, m := range statsMaps {
+		for key, stat := range m {
+			totalStat, ok := result[key]
+			if !ok {
+				result[key] = stat
+			} else {
+				newMin := totalStat.min
+				if stat.min < newMin {
+					newMin = stat.min
+				}
+				newMax := totalStat.max
+				if stat.max > newMin {
+					newMax = stat.max
+				}
+				result[key] = stast{
+					sum:   totalStat.sum + stat.sum,
+					count: totalStat.count + stat.count,
+					min:   newMin,
+					max:   newMax,
+				}
+			}
+		}
+	}
+
 	names := []string{}
-	for name := range statsMap {
+	for name := range result {
 		names = append(names, name)
 	}
 
@@ -125,7 +145,7 @@ func main() {
 	currMean := float64(0)
 
 	for _, name := range names {
-		stat, _ := statsMap[name]
+		stat, _ := result[name]
 		currMean = stat.sum / float64(stat.count)
 		fmt.Printf("%v;%v;%v;%v \n", name, stat.min, currMean, stat.max)
 	}
