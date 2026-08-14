@@ -150,5 +150,5 @@ func main() {
 		fmt.Printf("%v;%v;%v;%v \n", name, stat.min, currMean, stat.max)
 	}
 
-	fmt.Printf("Completado en %f segundos \n", time.Since(start).Seconds())
+	fmt.Printf("Un billon(1,000,000,000) de lineas procesadas en %f segundos \n", time.Since(start).Seconds())
 }
