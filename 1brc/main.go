@@ -48,10 +48,22 @@ func main() {
 	intervals := []interval{
 		{
 			start: 0,
-			end:   5_000_000_007,
+			end:   2_000_000_004,
 		},
 		{
-			start: 5_000_000_008,
+			start: 2_000_000_005,
+			end:   4_000_000_002,
+		},
+		{
+			start: 4_000_000_003,
+			end:   6_000_000_005,
+		},
+		{
+			start: 6_000_000_007,
+			end:   8_000_000_000,
+		},
+		{
+			start: 8_000_000_002,
 			end:   10_000_000_000,
 		},
 		{
@@ -72,6 +84,14 @@ func main() {
 				row, err := section.Read()
 				if errors.Is(err, io.EOF) {
 					break
+				}
+
+				//fmt.Println(row)
+				if len(row) != 2 {
+					fmt.Println("Broken line skipped ...")
+					fmt.Println(row)
+					fmt.Println("-----------------------------------")
+					continue
 				}
 
 				name := row[0]
