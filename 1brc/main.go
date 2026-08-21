@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type stast struct {
+type stat struct {
 	min   float64
 	sum   float64
 	max   float64
@@ -44,7 +44,8 @@ func main() {
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
-
+	
+	//La idea aqui es dividir el slice en varias partes para poder enviar una gorutine por cada intervalo.
 	intervals := []interval{
 		{
 			start: 0,
@@ -72,13 +73,14 @@ func main() {
 		},
 	}
 
-	statsMaps := []map[string]stast{}
+	statsMaps := []map[string]stat{}
 	for _, interval := range intervals {
 		wg.Add(1)
+		//Por cada itervalo se lanza una gorutine que ejecuta el mismo algoritmo que se haria en un single treat.
 		go func() {
 			section := csv.NewReader(io.NewSectionReader(f, interval.start, interval.end))
 			section.Comma = ';'
-			statsMap := map[string]stast{}
+			statsMap := map[string]stat{}
 
 			for {
 				row, err := section.Read()
@@ -86,7 +88,6 @@ func main() {
 					break
 				}
 
-				//fmt.Println(row)
 				if len(row) != 2 {
 					fmt.Println("Broken line skipped ...")
 					fmt.Println(row)
@@ -104,7 +105,7 @@ func main() {
 				}
 
 				if !ok {
-					statsMap[name] = stast{
+					statsMap[name] = stat{
 						min:   val,
 						sum:   val,
 						max:   val,
@@ -123,6 +124,7 @@ func main() {
 				}
 
 			}
+			//Si no se lockea la operacion append  el algoritmo deja de ser correcto, varios append al mismo tiempo generan una race condition en le array.
 			mu.Lock()
 			statsMaps = append(statsMaps, statsMap)
 			mu.Unlock()
@@ -131,24 +133,26 @@ func main() {
 	}
 	wg.Wait()
 
-	result := map[string]stast{}
+	//El hecho de que se lanzen varios go rutines hace que sea necesario hacer merge a los resultados, cosa que tambien toma tiempo.
+	result := map[string]stat{}
 	for _, m := range statsMaps {
-		for key, stat := range m {
+		for key, st := range m {
 			totalStat, ok := result[key]
 			if !ok {
-				result[key] = stat
+				result[key] = st
 			} else {
+				//Ojo: aqui se esta repitiendo trabajo que ya se hice en cada una de las gorutine.
 				newMin := totalStat.min
-				if stat.min < newMin {
-					newMin = stat.min
+				if st.min < newMin {
+					newMin = st.min
 				}
 				newMax := totalStat.max
-				if stat.max > newMin {
-					newMax = stat.max
+				if st.max > newMin {
+					newMax = st.max
 				}
-				result[key] = stast{
-					sum:   totalStat.sum + stat.sum,
-					count: totalStat.count + stat.count,
+				result[key] = stat{
+					sum:   totalStat.sum + st.sum,
+					count: totalStat.count + st.count,
 					min:   newMin,
 					max:   newMax,
 				}
@@ -161,6 +165,7 @@ func main() {
 		names = append(names, name)
 	}
 
+	//Lo preferible serai que este sort se haga "in place"
 	slices.Sort(names) //Esto no deberia costar mucho porque las keys anidadas son relativamente pocas ...
 	currMean := float64(0)
 
